@@ -14,9 +14,6 @@ contract StakingToken is ERC20 {
     }
 }
 
-
-
-
 contract RewardToken is ERC20 {
     constructor() ERC20("Reward Token", "ST") {
         _mint(msg.sender, 100 * 1e18);

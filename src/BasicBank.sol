@@ -69,27 +69,41 @@ contract BasicBank {
     }
 
     function withdraw (uint256 _index) external {
+
         require (balanceOf[msg.sender] > 0, "you need to deposit first");
         require (_index < depositOf[msg.sender].length, "wrong index");
-        require (block.timestamp > depositOf[msg.sender][_index].endTime, "still not end");
+        require (block.timestamp >= depositOf[msg.sender][_index].endTime, "still not end");
         
         Deposit[] storage deposits = depositOf[msg.sender];
         uint256 _amount = deposits[_index].amount;
 
         // 提款
         stakingToken.transfer(msg.sender, _amount);
-        removeDeposit(_index);
         totalSupply -= _amount;
         balanceOf[msg.sender] -= _amount;
 
         // reward
         rewardOf[msg.sender] += getReward(_index);
+
+        removeDeposit(_index);
     }
 
     function getReward (uint256 _index) internal view returns(uint256) {
         uint256 _amount = depositOf[msg.sender][_index].amount;
         uint256 _startTime = depositOf[msg.sender][_index].startTime;
         return (block.timestamp - _startTime) * _amount * rewardRate; 
+    }
+
+    // 使用者旗下的所有定存利息
+    function getAllReward() external view returns (uint256){
+        uint256 N = depositOf[msg.sender].length;
+        uint256 allRewards;
+
+        for (uint256 i = 0; i < N; i++) {
+            allRewards += getReward(i);
+        }
+
+        return allRewards;
     }
 
 
